@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mental Health Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .chat-container {
+            width: 350px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .chat-header {
+            background-color: #2196f3;
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 10px 10px 0 0;
+        }
+        .chat-body {
+            padding: 20px;
+            max-height: 250px;
+            overflow-y: auto;
+            background-color: #f5f5f5;
+        }
+        .message {
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: flex-start;
+            align-items: flex-start;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        .user-message {
+            background-color: #e0e0e0;
+            color: #333;
+            padding: 8px 12px;
+            border-radius: 5px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        .bot-message {
+            background-color: #2196f3;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 5px;
+            max-width: 80%;
+            align-self: flex-end;
+            word-wrap: break-word;
+        }
+        .input-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            border-top: 1px solid #ccc;
+        }
+        #user-input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            transition: border-color 0.3s ease-in-out;
+        }
+        #user-input:focus {
+            border-color: #2196f3;
+            outline: none;
+        }
+        #send-btn {
+            margin-left: 10px;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            background-color: #2196f3;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s ease-in-out;
+        }
+        #send-btn:hover {
+            background-color: #0d47a1;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1>Your Counsel</h1>
+            <p>{{ intro_message }}</p>
+        </div>
+        <div class="chat-body" id="chat-box">
+            <!-- Chat messages will be inserted here -->
+        </div>
+        <div class="input-container">
+            <input type="text" id="user-input" placeholder="Type your message...">
+            <button id="send-btn">Send</button>
+        </div>
+    </div>
+
+    <script>
+       document.addEventListener("DOMContentLoaded", () => {
+    const chatBox = document.getElementById("chat-box");
+    const userInput = document.getElementById("user-input");
+    const sendBtn = document.getElementById("send-btn");
+
+    sendBtn.addEventListener("click", () => {
+        sendMessage();
+    });
+
+    userInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+            sendMessage();
+        }
+    });
+
+    function sendMessage() {
+        const userMessage = userInput.value.trim();
+        if (userMessage !== "") {
+            displayUserMessage(userMessage);
+            userInput.value = "";
+
+            fetch('/get_response', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ user_message: userMessage })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const botResponse = data.bot_response; // Assuming your API returns the bot's response in 'bot_response' field
+                displayBotMessage(botResponse);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    }
+
+    function displayUserMessage(message) {
+        const userMessageHTML = `<div class="message"><div class="user-message">${message}</div></div>`;
+        chatBox.innerHTML += userMessageHTML;
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function displayBotMessage(message) {
+        const botMessageHTML = `<div class="message"><div class="bot-message">${message}</div></div>`;
+        chatBox.innerHTML += botMessageHTML;
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+});
+
+    </script>
+</body>
+</html>
